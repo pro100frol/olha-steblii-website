@@ -1,0 +1,25 @@
+# Build artifacts
+.vercel/
+
+# Environment variables
+.env
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+out/
+build/
+dist/
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+
+# IDE
+.idea
+*.swp
+*.swo
