@@ -1,7 +1,11 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(key);
+}
 
 interface ContactPayload {
   fullName: string;
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
       ${imageUrls.length > 0 ? `<h3>Uploaded Images</h3><p>${imageLinks}</p>` : ""}
     `;
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: "booking@olhasteblii.com",
       to: "olhasteblii@gmail.com",
       subject: `Booking Request from ${fullName}`,
