@@ -134,11 +134,24 @@ export function BookingForm() {
       const imageUrls: string[] = [];
 
       for (const file of allFiles) {
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
+        console.log("[booking-form] uploading", {
+          name: file.name,
+          type: file.type,
+          size: file.size,
         });
-        imageUrls.push(blob.url);
+        try {
+          const blob = await upload(file.name, file, {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+          });
+          console.log("[booking-form] uploaded", blob.url);
+          imageUrls.push(blob.url);
+        } catch (uploadErr) {
+          console.error("[booking-form] upload failed for", file.name, uploadErr);
+          throw new Error(
+            `Failed to upload ${file.name}: ${(uploadErr as Error).message}`
+          );
+        }
       }
 
       // Build details object from form data

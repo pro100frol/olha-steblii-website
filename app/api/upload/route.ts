@@ -8,20 +8,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (_pathname) => {
+      onBeforeGenerateToken: async (pathname) => {
+        console.log("[blob upload] generating token for:", pathname);
         return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
+          allowedContentTypes: [
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+          ],
+          maximumSizeInBytes: 25 * 1024 * 1024, // 25 MB
           addRandomSuffix: true,
         };
       },
-      onUploadCompleted: async () => {
-        // no-op – nothing to persist server-side
+      onUploadCompleted: async ({ blob }) => {
+        console.log("[blob upload] completed:", blob.url);
       },
     });
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    console.error("[blob upload] error:", error);
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 400 }
