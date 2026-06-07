@@ -12,6 +12,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
           maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
+          addRandomSuffix: true,
         };
       },
       onUploadCompleted: async () => {
