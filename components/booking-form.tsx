@@ -129,30 +129,36 @@ export function BookingForm() {
     setSubmitting(true);
 
     try {
-      // Upload all files to Vercel Blob
+      // Upload all files to Vercel Blob in parallel for speed
       const allFiles = [...placementFiles, ...referenceFiles];
-      const imageUrls: string[] = [];
+      console.log(`[booking-form] uploading ${allFiles.length} files in parallel`);
 
-      for (const file of allFiles) {
-        console.log("[booking-form] uploading", {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-        });
-        try {
-          const blob = await upload(file.name, file, {
-            access: "public",
-            handleUploadUrl: "/api/upload",
+      const imageUrls = await Promise.all(
+        allFiles.map(async (file) => {
+          console.log("[booking-form] uploading", {
+            name: file.name,
+            type: file.type,
+            size: file.size,
           });
-          console.log("[booking-form] uploaded", blob.url);
-          imageUrls.push(blob.url);
-        } catch (uploadErr) {
-          console.error("[booking-form] upload failed for", file.name, uploadErr);
-          throw new Error(
-            `Failed to upload ${file.name}: ${(uploadErr as Error).message}`
-          );
-        }
-      }
+          try {
+            const blob = await upload(file.name, file, {
+              access: "public",
+              handleUploadUrl: "/api/upload",
+            });
+            console.log("[booking-form] uploaded", blob.url);
+            return blob.url;
+          } catch (uploadErr) {
+            console.error(
+              "[booking-form] upload failed for",
+              file.name,
+              uploadErr
+            );
+            throw new Error(
+              `Failed to upload ${file.name}: ${(uploadErr as Error).message}`
+            );
+          }
+        })
+      );
 
       // Build details object from form data
       const details: Record<string, string> = {

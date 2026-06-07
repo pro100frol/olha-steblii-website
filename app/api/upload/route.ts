@@ -21,6 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ],
           maximumSizeInBytes: 25 * 1024 * 1024, // 25 MB
           addRandomSuffix: true,
+          validUntil: Date.now() + 60 * 60 * 1000, // 1 hour
         };
       },
       onUploadCompleted: async ({ blob }) => {
