@@ -68,7 +68,6 @@ export function PortfolioGallery({ items }: PortfolioGalleryProps) {
                 alt={item.title}
                 width={600}
                 height={800}
-                {...(index === 0 ? { priority: true } : {})}
                 className={`w-full h-auto object-cover transition-transform duration-700 ${
                   hoveredIndex === index ? "scale-[1.02]" : "scale-100"
                 }`}
