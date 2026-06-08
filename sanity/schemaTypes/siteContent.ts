@@ -40,6 +40,14 @@ export const siteContent = defineType({
       type: "text",
     }),
     defineField({
+      name: "specialties",
+      title: "Specialties",
+      description:
+        "List of short specialty labels shown under the artist bio (e.g. 'Fine Line Specialist'). Leave empty to use the defaults.",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
+    defineField({
       name: "artistPortrait",
       title: "Artist Portrait",
       type: "image",

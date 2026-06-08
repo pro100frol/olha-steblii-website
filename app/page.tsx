@@ -14,6 +14,7 @@ interface SiteContent {
   hideHeroTagline?: boolean;
   heroImage?: { asset: { _ref: string }; hotspot?: { x: number; y: number } };
   aboutBio?: string;
+  specialties?: string[];
   artistPortrait?: { asset: { _ref: string }; hotspot?: { x: number; y: number } };
   studioHours?: string;
   waitlistStatus?: string;
@@ -47,6 +48,7 @@ export default async function Home() {
         <Portfolio />
         <About
           bio={content?.aboutBio}
+          specialties={content?.specialties}
           portraitUrl={
             content?.artistPortrait
               ? urlFor(content.artistPortrait).width(800).quality(80).url()
