@@ -16,6 +16,19 @@ export const siteContent = defineType({
       type: "string",
     }),
     defineField({
+      name: "heroTagline",
+      title: "Hero Tagline",
+      type: "string",
+      description: "Small text below the hero title. Leave empty to keep the default ('Precision in ink.').",
+    }),
+    defineField({
+      name: "hideHeroTagline",
+      title: "Hide Hero Tagline",
+      type: "boolean",
+      description: "Toggle on to hide the tagline entirely.",
+      initialValue: false,
+    }),
+    defineField({
       name: "heroImage",
       title: "Hero Image",
       type: "image",

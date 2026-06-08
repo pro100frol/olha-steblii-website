@@ -10,6 +10,8 @@ import { client, urlFor } from "@/sanity/client";
 interface SiteContent {
   heroTitle?: string;
   heroSubtitle?: string;
+  heroTagline?: string;
+  hideHeroTagline?: boolean;
   heroImage?: { asset: { _ref: string }; hotspot?: { x: number; y: number } };
   aboutBio?: string;
   artistPortrait?: { asset: { _ref: string }; hotspot?: { x: number; y: number } };
@@ -38,6 +40,8 @@ export default async function Home() {
         <Hero
           title={content?.heroTitle}
           subtitle={content?.heroSubtitle}
+          tagline={content?.heroTagline}
+          hideTagline={content?.hideHeroTagline}
           heroImageUrl={heroImageUrl}
         />
         <Portfolio />

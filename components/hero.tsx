@@ -5,10 +5,15 @@ import { ArrowDown } from "lucide-react";
 interface HeroProps {
   title?: string;
   subtitle?: string;
+  tagline?: string;
+  hideTagline?: boolean;
   heroImageUrl?: string;
 }
 
-export function Hero({ title, subtitle, heroImageUrl }: HeroProps) {
+const DEFAULT_TAGLINE = "Precision in ink.";
+
+export function Hero({ title, subtitle, tagline, hideTagline, heroImageUrl }: HeroProps) {
+  const taglineText = tagline?.trim() ? tagline : DEFAULT_TAGLINE;
   return (
     <section className="relative h-screen min-h-[600px] flex items-end">
       {/* Background Image */}
@@ -36,9 +41,11 @@ export function Hero({ title, subtitle, heroImageUrl }: HeroProps) {
             <span className="block">{title ?? "OLHA STEBLII"}</span>
             <span className="block text-accent mt-2">{subtitle ?? "TATTOO"}</span>
           </h1>
-          <p className="mt-8 text-base md:text-lg text-muted-foreground tracking-widest font-light uppercase">
-            Precision in ink.
-          </p>
+          {!hideTagline && (
+            <p className="mt-8 text-base md:text-lg text-muted-foreground tracking-widest font-light uppercase">
+              {taglineText}
+            </p>
+          )}
           <Link
             href="#portfolio"
             className="mt-16 inline-flex items-center gap-3 text-xs text-muted-foreground hover:text-accent transition-colors tracking-[0.3em] uppercase group"
