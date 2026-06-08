@@ -34,11 +34,11 @@ export async function Portfolio() {
     <section id="portfolio" className="py-16 md:py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Section Header */}
-        <div className="mb-20">
-          <p className="text-xs uppercase tracking-[0.3em] text-accent mb-6">
+        <div className="mb-10 md:mb-20">
+          <p className="text-xs uppercase tracking-[0.3em] text-accent mb-4 md:mb-6">
             Portfolio
           </p>
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-extralight tracking-tight text-foreground">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-extralight tracking-tight text-foreground">
             Selected Works
           </h2>
         </div>

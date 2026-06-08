@@ -53,11 +53,11 @@ export function PortfolioGallery({ items }: PortfolioGalleryProps) {
   return (
     <>
       {/* True Masonry Grid */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
+      <div className="columns-2 md:columns-2 lg:columns-3 gap-3 md:gap-6">
         {items.map((item, index) => (
           <div
             key={index}
-            className="relative overflow-hidden break-inside-avoid mb-6 group cursor-pointer"
+            className="relative overflow-hidden break-inside-avoid mb-3 md:mb-6 group cursor-pointer"
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             onClick={() => openLightbox(index)}
@@ -68,17 +68,18 @@ export function PortfolioGallery({ items }: PortfolioGalleryProps) {
                 alt={item.title}
                 width={600}
                 height={800}
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 50vw, 33vw"
                 className={`w-full h-auto object-cover transition-transform duration-700 ${
                   hoveredIndex === index ? "scale-[1.02]" : "scale-100"
                 }`}
               />
               {/* Hover Overlay */}
               <div
-                className={`absolute inset-0 bg-background/70 transition-opacity duration-500 flex items-end p-8 ${
+                className={`absolute inset-0 bg-background/70 transition-opacity duration-500 flex items-end p-4 md:p-8 ${
                   hoveredIndex === index ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <p className="text-xs uppercase tracking-[0.25em] text-foreground">
+                <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.25em] text-foreground">
                   {item.title}
                 </p>
               </div>
