@@ -18,6 +18,13 @@ interface SiteContent {
   artistPortrait?: { asset: { _ref: string }; hotspot?: { x: number; y: number } };
   studioHours?: string;
   waitlistStatus?: string;
+  locationEyebrow?: string;
+  locationHeading?: string;
+  studioLabel?: string;
+  studioName?: string;
+  studioAddress?: string;
+  contactEmail?: string;
+  guestSpotsLabel?: string;
   accentColour?: string;
 }
 
@@ -58,6 +65,13 @@ export default async function Home() {
         <Location
           studioHours={content?.studioHours}
           waitlistStatus={content?.waitlistStatus}
+          eyebrow={content?.locationEyebrow}
+          heading={content?.locationHeading}
+          studioLabel={content?.studioLabel}
+          studioName={content?.studioName}
+          studioAddress={content?.studioAddress}
+          contactEmail={content?.contactEmail}
+          guestSpotsLabel={content?.guestSpotsLabel}
         />
         <Booking />
       </main>
