@@ -44,11 +44,16 @@ export async function POST(request: NextRequest) {
       .filter((value): value is File => value instanceof File);
     const imageFiles = [...placementFiles, ...referenceFiles];
 
-    if (!fullName || !email) {
+    if (!fullName || typeof email !== "string" || !email.trim()) {
       return NextResponse.json(
         { error: "fullName and email are required" },
         { status: 400 }
       );
+    }
+
+    const replyTo = email.trim();
+    if (replyTo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(replyTo)) {
+      return NextResponse.json({ error: "Please provide a valid email address" }, { status: 400 });
     }
 
     if (placementFiles.length !== 1 || referenceFiles.length === 0 || referenceFiles.length > MAX_REFERENCE_IMAGE_COUNT) {
@@ -84,7 +89,7 @@ export async function POST(request: NextRequest) {
       <h2>New Booking Request</h2>
       <table>
         <tr><td style="padding:4px 12px 4px 0;font-weight:600">Name</td><td>${escapeHtml(fullName)}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;font-weight:600">Email</td><td>${escapeHtml(email)}</td></tr>
+        <tr><td style="padding:4px 12px 4px 0;font-weight:600">Email</td><td>${escapeHtml(replyTo)}</td></tr>
         <tr><td style="padding:4px 12px 4px 0;font-weight:600">Phone</td><td>${escapeHtml(phone)}</td></tr>
         ${detailRows}
       </table>
@@ -94,6 +99,7 @@ export async function POST(request: NextRequest) {
     const { error } = await getResend().emails.send({
       from: "booking@olhasteblii.com",
       to: "olhasteblii@gmail.com",
+      replyTo,
       subject: `Booking Request from ${fullName}`,
       html,
       attachments,
