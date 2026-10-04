@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Instagram } from "lucide-react";
 
 export function Footer() {
   return (
@@ -13,19 +12,6 @@ export function Footer() {
           >
             Olha Steblii Tattoo
           </Link>
-
-          {/* Social */}
-          <div className="flex items-center gap-6">
-            <Link
-              href="https://www.instagram.com/olha.steblii/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-accent transition-colors duration-300"
-              aria-label="Follow on Instagram"
-            >
-              <Instagram className="h-4 w-4" />
-            </Link>
-          </div>
 
           {/* Copyright */}
           <p className="text-xs text-muted-foreground/60 tracking-wide">

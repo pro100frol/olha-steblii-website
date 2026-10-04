@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Instagram, Menu, X } from "lucide-react";
 
 const navLinks = [
   { href: "#portfolio", label: "Portfolio" },
@@ -73,6 +73,17 @@ export function Navigation() {
             </a>
           </div>
 
+          <a
+            href="https://www.instagram.com/olha.steblii/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex text-muted-foreground hover:text-accent transition-colors duration-300"
+            aria-label="Follow on Instagram"
+            title="Instagram"
+          >
+            <Instagram className="h-4 w-4" />
+          </a>
+
           {/* Mobile: Book Now + Menu Button */}
           <div className="flex md:hidden items-center gap-4">
             <a 
@@ -81,6 +92,16 @@ export function Navigation() {
               className="px-4 py-2 bg-accent text-accent-foreground text-xs uppercase tracking-[0.15em] hover:bg-accent/80 transition-colors duration-300"
             >
               Bookings
+            </a>
+            <a
+              href="https://www.instagram.com/olha.steblii/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-accent transition-colors duration-300"
+              aria-label="Follow on Instagram"
+              title="Instagram"
+            >
+              <Instagram className="h-4 w-4" />
             </a>
             <button
               onClick={() => setIsOpen(!isOpen)}

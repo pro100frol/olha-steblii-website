@@ -1,5 +1,9 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  MAX_REFERENCE_IMAGE_COUNT,
+  MAX_TOTAL_BOOKING_IMAGE_BYTES,
+} from "@/lib/booking-upload-limits";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -12,13 +16,33 @@ interface ContactPayload {
   email: string;
   phone: string;
   details: Record<string, string>;
-  imageUrls: string[];
 }
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as ContactPayload;
-    const { fullName, email, phone, details, imageUrls } = body;
+    const formData = await request.formData();
+    const booking = formData.get("booking");
+    if (typeof booking !== "string") {
+      return NextResponse.json({ error: "Booking details are required" }, { status: 400 });
+    }
+
+    let body: ContactPayload;
+    try {
+      body = JSON.parse(booking) as ContactPayload;
+    } catch {
+      return NextResponse.json({ error: "Invalid booking details" }, { status: 400 });
+    }
+
+    const { fullName, email, phone, details } = body;
+    const placementFiles = formData
+      .getAll("placementImages")
+      .filter((value): value is File => value instanceof File);
+    const referenceFiles = formData
+      .getAll("referenceImages")
+      .filter((value): value is File => value instanceof File);
+    const imageFiles = [...placementFiles, ...referenceFiles];
 
     if (!fullName || !email) {
       return NextResponse.json(
@@ -27,13 +51,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (placementFiles.length !== 1 || referenceFiles.length === 0 || referenceFiles.length > MAX_REFERENCE_IMAGE_COUNT) {
+      return NextResponse.json({ error: "Please attach one placement photo and up to four reference photos" }, { status: 400 });
+    }
+
+    if (imageFiles.some((file) => file.type !== "image/jpeg" || file.size === 0)) {
+      return NextResponse.json({ error: "Photos must be valid JPEG images" }, { status: 400 });
+    }
+
+    const totalImageBytes = imageFiles.reduce((total, file) => total + file.size, 0);
+    if (totalImageBytes > MAX_TOTAL_BOOKING_IMAGE_BYTES) {
+      return NextResponse.json({ error: "Photos exceed the 3 MB combined limit" }, { status: 413 });
+    }
+
+    const attachments = await Promise.all(
+      imageFiles.map(async (file, index) => {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^\.+/, "").slice(0, 100);
+        const category = index < placementFiles.length ? "placement" : "reference";
+        return {
+          filename: `${category}-${safeName || `photo-${index + 1}.jpg`}`,
+          content: Buffer.from(await file.arrayBuffer()).toString("base64"),
+          contentType: "image/jpeg",
+        };
+      })
+    );
+
     const detailRows = Object.entries(details)
       .map(([key, value]) => `<tr><td style="padding:4px 12px 4px 0;font-weight:600">${escapeHtml(key)}</td><td style="padding:4px 0">${escapeHtml(String(value))}</td></tr>`)
       .join("");
-
-    const imageLinks = imageUrls
-      .map((url, i) => `<a href="${escapeHtml(url)}" target="_blank">Image ${i + 1}</a>`)
-      .join(" &middot; ");
 
     const html = `
       <h2>New Booking Request</h2>
@@ -43,7 +88,7 @@ export async function POST(request: NextRequest) {
         <tr><td style="padding:4px 12px 4px 0;font-weight:600">Phone</td><td>${escapeHtml(phone)}</td></tr>
         ${detailRows}
       </table>
-      ${imageUrls.length > 0 ? `<h3>Uploaded Images</h3><p>${imageLinks}</p>` : ""}
+      <h3>Uploaded Images</h3><p>${imageFiles.length} image(s) are attached to this email.</p>
     `;
 
     const { error } = await getResend().emails.send({
@@ -51,6 +96,7 @@ export async function POST(request: NextRequest) {
       to: "olhasteblii@gmail.com",
       subject: `Booking Request from ${fullName}`,
       html,
+      attachments,
     });
 
     if (error) {

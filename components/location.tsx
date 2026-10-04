@@ -1,4 +1,4 @@
-import { MapPin, Clock, Mail } from "lucide-react";
+import { MapPin, Clock, Mail, Instagram } from "lucide-react";
 
 interface LocationProps {
   studioHours?: string;
@@ -87,6 +87,16 @@ export function Location({
                     className="text-muted-foreground text-sm hover:text-accent transition-colors"
                   >
                     {contactEmailText}
+                  </a>
+                  <a
+                    href="https://www.instagram.com/olha.steblii/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Follow Olha on Instagram"
+                    className="mt-2 flex items-center gap-2 text-muted-foreground text-sm hover:text-accent transition-colors"
+                  >
+                    <Instagram className="h-4 w-4" />
+                    <span>@olha.steblii</span>
                   </a>
                 </div>
               </div>

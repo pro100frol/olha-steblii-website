@@ -1,9 +1,73 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { upload } from "@vercel/blob/client";
+import imageCompression from "browser-image-compression";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Loader2 } from "lucide-react";
+import {
+  MAX_REFERENCE_IMAGE_COUNT,
+  MAX_TOTAL_BOOKING_IMAGE_BYTES,
+} from "@/lib/booking-upload-limits";
+
+const MAX_ORIGINAL_IMAGE_BYTES = 25 * 1024 * 1024;
+
+async function prepareImagesForEmail(files: File[]): Promise<File[]> {
+  const jpegFiles = await Promise.all(
+    files.map(async (file) => {
+      if (file.size > MAX_ORIGINAL_IMAGE_BYTES) {
+        throw new Error(`${file.name} is larger than 25 MB.`);
+      }
+
+      const isHeic = /image\/hei[cf]|\.hei[cf]$/i.test(`${file.type} ${file.name}`);
+      if (!isHeic) return file;
+
+      const heic2any = (await import("heic2any")).default;
+      const converted = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.9,
+      });
+      const jpeg = Array.isArray(converted) ? converted[0] : converted;
+      const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";
+      return new File([jpeg], `${baseName}.jpg`, {
+        type: "image/jpeg",
+        lastModified: file.lastModified,
+      });
+    })
+  );
+
+  let perImageLimitMb =
+    (MAX_TOTAL_BOOKING_IMAGE_BYTES * 0.85) / files.length / (1024 * 1024);
+  let maxWidthOrHeight = 2000;
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const compressedFiles = await Promise.all(
+      jpegFiles.map(async (file) => {
+        const compressed = await imageCompression(file, {
+          maxSizeMB: perImageLimitMb,
+          maxWidthOrHeight,
+          useWebWorker: true,
+          initialQuality: 0.85,
+          fileType: "image/jpeg",
+        });
+        const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";
+        return new File([compressed], `${baseName}.jpg`, {
+          type: "image/jpeg",
+          lastModified: file.lastModified,
+        });
+      })
+    );
+
+    const totalBytes = compressedFiles.reduce((total, file) => total + file.size, 0);
+    if (totalBytes <= MAX_TOTAL_BOOKING_IMAGE_BYTES) return compressedFiles;
+
+    const reduction = (MAX_TOTAL_BOOKING_IMAGE_BYTES / totalBytes) * 0.85;
+    perImageLimitMb *= reduction;
+    maxWidthOrHeight = Math.max(1000, Math.floor(maxWidthOrHeight * 0.9));
+  }
+
+  throw new Error("The selected photos are too large to email. Please choose fewer photos.");
+}
 
 type FormData = {
   fullName: string;
@@ -64,6 +128,7 @@ export function BookingForm() {
 
   const [placementFiles, setPlacementFiles] = useState<File[]>([]);
   const [referenceFiles, setReferenceFiles] = useState<File[]>([]);
+  const [referenceFileError, setReferenceFileError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -99,7 +164,15 @@ export function BookingForm() {
 
   const handleReferenceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setReferenceFiles(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      if (files.length > MAX_REFERENCE_IMAGE_COUNT) {
+        setReferenceFileError(`Please choose no more than ${MAX_REFERENCE_IMAGE_COUNT} reference photos.`);
+        setReferenceFiles([]);
+        e.target.value = "";
+        return;
+      }
+      setReferenceFileError("");
+      setReferenceFiles(files);
     }
   };
 
@@ -129,36 +202,8 @@ export function BookingForm() {
     setSubmitting(true);
 
     try {
-      // Upload all files to Vercel Blob in parallel for speed
       const allFiles = [...placementFiles, ...referenceFiles];
-      console.log(`[booking-form] uploading ${allFiles.length} files in parallel`);
-
-      const imageUrls = await Promise.all(
-        allFiles.map(async (file) => {
-          console.log("[booking-form] uploading", {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-          });
-          try {
-            const blob = await upload(file.name, file, {
-              access: "public",
-              handleUploadUrl: "/api/upload",
-            });
-            console.log("[booking-form] uploaded", blob.url);
-            return blob.url;
-          } catch (uploadErr) {
-            console.error(
-              "[booking-form] upload failed for",
-              file.name,
-              uploadErr
-            );
-            throw new Error(
-              `Failed to upload ${file.name}: ${(uploadErr as Error).message}`
-            );
-          }
-        })
-      );
+      const compressedFiles = await prepareImagesForEmail(allFiles);
 
       // Build details object from form data
       const details: Record<string, string> = {
@@ -177,16 +222,26 @@ export function BookingForm() {
         Description: formData.description,
       };
 
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const body = new FormData();
+      body.append(
+        "booking",
+        JSON.stringify({
           fullName: formData.fullName,
           email: formData.email,
           phone: formData.phone,
           details,
-          imageUrls,
-        }),
+        })
+      );
+      compressedFiles.slice(0, placementFiles.length).forEach((file) => {
+        body.append("placementImages", file, file.name);
+      });
+      compressedFiles.slice(placementFiles.length).forEach((file) => {
+        body.append("referenceImages", file, file.name);
+      });
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        body,
       });
 
       if (!res.ok) {
@@ -216,6 +271,7 @@ export function BookingForm() {
       });
       setPlacementFiles([]);
       setReferenceFiles([]);
+      setReferenceFileError("");
     } catch (err) {
       alert(`Something went wrong: ${(err as Error).message}`);
     } finally {
@@ -604,6 +660,9 @@ export function BookingForm() {
         <p className="text-xs text-muted-foreground/70 mb-4">
           Please upload 2-4 photos to reference your idea.
         </p>
+        <p className="text-xs text-muted-foreground/70 mb-4">
+          Original photos up to 25 MB each are accepted and compressed before emailing (3 MB combined maximum).
+        </p>
         <div
           onClick={() => referenceInputRef.current?.click()}
           className="border border-dashed border-white/10 hover:border-accent/50 p-8 md:p-10 text-center cursor-pointer transition-colors duration-300 min-h-[120px] flex flex-col items-center justify-center"
@@ -641,6 +700,9 @@ export function BookingForm() {
           </div>
         )}
         {errorMsg(referenceFiles.length === 0, "Please upload at least one reference photo")}
+        {referenceFileError && (
+          <p className="mt-2 text-xs text-red-400">{referenceFileError}</p>
+        )}
       </div>
       <p className="text-xs text-muted-foreground/60 text-center tracking-wide">
         {"Please don't forget to check your spam folder in case my response ended up there."}
