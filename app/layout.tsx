@@ -9,14 +9,14 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://olhasteblii.com'),
-  title: 'Olha Steblii | Fine Line Tattoo Artist in London',
-  description: 'Fine line, blackwork and botanical tattoos by Olha Steblii at Origin Tattoo in London Bridge. Explore her work and request a booking.',
+  title: 'Olha Steblii | Colour & Fine Line Tattoo Artist in London',
+  description: 'Custom colour tattoos, fine line, blackwork and botanical designs by Olha Steblii at Origin Tattoo in London Bridge. Explore her portfolio and request a booking.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Olha Steblii | Fine Line Tattoo Artist in London',
-    description: 'Fine line, blackwork and botanical tattoos by Olha Steblii at Origin Tattoo in London Bridge.',
+    title: 'Olha Steblii | Colour & Fine Line Tattoo Artist in London',
+    description: 'Custom colour tattoos, fine line, blackwork and botanical designs by Olha Steblii at Origin Tattoo in London Bridge.',
     url: 'https://olhasteblii.com/',
     siteName: 'Olha Steblii Tattoo',
     locale: 'en_GB',
