@@ -8,7 +8,7 @@ const navLinks = [
   { href: "#portfolio", label: "Portfolio" },
   { href: "#about", label: "About" },
   { href: "#location", label: "Location" },
-  { href: "#booking", label: "Booking" },
+  { href: "#booking", label: "Bookings" },
 ];
 
 export function Navigation() {
@@ -69,7 +69,7 @@ export function Navigation() {
               onClick={(e) => handleSmoothScroll(e, "#booking")}
               className="text-xs uppercase tracking-[0.2em] text-accent hover:text-foreground transition-colors duration-300"
             >
-              Booking
+              Bookings
             </a>
           </div>
 
@@ -80,7 +80,7 @@ export function Navigation() {
               onClick={(e) => handleSmoothScroll(e, "#booking")}
               className="px-4 py-2 bg-accent text-accent-foreground text-xs uppercase tracking-[0.15em] hover:bg-accent/80 transition-colors duration-300"
             >
-              Booking
+              Bookings
             </a>
             <button
               onClick={() => setIsOpen(!isOpen)}
